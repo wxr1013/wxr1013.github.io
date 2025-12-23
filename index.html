@@ -4,941 +4,648 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>个人简历</title>
-    <style>
-        /* 全局样式 */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: "Microsoft Yahei", sans-serif;
+    <!-- 引入Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入Font Awesome图标 -->
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    
+    <!-- 自定义Tailwind配置 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        teal: {
+                            light: '#E0F2F1',
+                            DEFAULT: '#80CBC4',
+                            dark: '#4DB6AC',
+                            darker: '#26A69A',
+                            darkest: '#00897B'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.8s ease-out forwards',
+                        'slide-up': 'slideUp 0.6s ease-out forwards',
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'float': 'float 6s ease-in-out infinite',
+                        'float-delay-1': 'float 6s ease-in-out 1s infinite',
+                        'float-delay-2': 'float 6s ease-in-out 2s infinite',
+                        'spin-slow': 'spin 8s linear infinite',
+                        'bounce-slow': 'bounce 3s infinite',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        },
+                        slideUp: {
+                            '0%': { transform: 'translateY(20px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' },
+                        },
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-20px)' },
+                        }
+                    }
+                }
+            }
         }
-
-        :root {
-            --dark-green: #085142; /* 墨绿色主色调 */
-            --light-green: #0d6c59; /* 浅墨绿色辅助色 */
-            --white: #ffffff; /* 白色背景 */
-            --gray: #f5f5f5; /* 浅灰色分隔色 */
-            --text-gray: #101010; /* 文字颜色 */
+    </script>
+    
+    <!-- 自定义样式 -->
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .nav-active {
+                @apply bg-teal-dark text-white shadow-md;
+            }
+            .section-fade {
+                @apply opacity-0 translate-y-8 transition-all duration-700 ease-out;
+            }
+            .section-show {
+                @apply opacity-100 translate-y-0;
+            }
+            .text-gradient {
+                @apply bg-clip-text text-transparent bg-gradient-to-r from-teal-darker to-teal-darkest;
+            }
+            .card-hover {
+                @apply transition-all duration-300 hover:shadow-lg hover:-translate-y-1 hover:border-teal;
+            }
         }
-
-        body {
-            background-color: var(--white);
-            color: var(--text-gray);
-            scroll-behavior: smooth; /* 平滑滚动 */
+        
+        /* 平滑滚动 */
+        html {
+            scroll-behavior: smooth;
+            scroll-padding-top: 80px;
         }
-
-        /* 优化：首页欢迎界面（展示姓名+照片，增强动画） */
-        .welcome-page {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100vh;
-            background: linear-gradient(135deg, var(--dark-green) 0%, var(--light-green) 100%);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
-            transition: opacity 1s ease-in-out, transform 1s ease-in-out;
+        
+        /* 自定义滚动条 */
+        ::-webkit-scrollbar {
+            width: 10px;
         }
-
-        .welcome-avatar {
-            width: 150px;
-            height: 150px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 6px solid var(--white);
-            box-shadow: 0 0 30px rgba(255, 255, 255, 0.3);
-            margin-bottom: 1.5rem;
-            /* 新增：头像旋转+缩放动画 */
-            animation: avatarFloat 3s ease-in-out infinite alternate, fadeIn 1.5s ease;
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 5px;
         }
-
-        .welcome-name {
-            color: var(--white);
-            font-size: 3.5rem;
-            font-weight: bold;
-            margin-bottom: 0.8rem;
-            /* 新增：文字逐字出现动画 */
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, #80CBC4, #26A69A);
+            border-radius: 5px;
+            transition: background 0.3s;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(180deg, #4DB6AC, #00897B);
+        }
+        
+        /* 背景渐变效果 */
+        .bg-gradient-teal {
+            background: linear-gradient(135deg, #E0F2F1 0%, #B2DFDB 100%);
+        }
+        
+        /* 技能进度条 */
+        .skill-bar {
+            height: 8px;
+            border-radius: 4px;
+            background-color: #E0F2F1;
             overflow: hidden;
-            white-space: nowrap;
-            border-right: 3px solid var(--white);
-            animation: typing 2s steps(10) forwards, blinkCursor 0.75s step-end infinite;
         }
-
-        .welcome-desc {
-            color: var(--white);
-            font-size: 1.2rem;
-            letter-spacing: 2px;
-            /* 新增：文字淡入上移动画 */
-            animation: fadeUp 2s ease;
+        .skill-progress {
+            height: 100%;
+            border-radius: 4px;
+            background: linear-gradient(90deg, #80CBC4, #26A69A);
+            transition: width 1s ease-in-out;
+        }
+        
+        /* 视差效果 */
+        .parallax {
+            transform: translateZ(0);
+            transition: transform 0.2s ease-out;
+        }
+        
+        /* 主页面过渡效果 */
+        .landing-transition {
+            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
         }
-
-        /* 优化：导航栏（增强活泼感，新增悬浮动效） */
-        nav {
-            position: sticky;
-            top: 0;
-            background-color: var(--white);
-            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
-            z-index: 999;
-            padding: 1rem 5%;
-            /* 新增：导航栏轻微浮动效果 */
-            transition: transform 0.3s ease;
-        }
-
-        nav:hover {
-            transform: translateY(-2px);
-        }
-
-        .nav-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .logo {
-            color: var(--dark-green);
-            font-size: 1.5rem;
-            font-weight: bold;
-            /* 新增：logo缩放动画 */
-            transition: transform 0.3s ease;
-        }
-
-        .logo:hover {
-            transform: scale(1.05);
-        }
-
-        .nav-links {
-            display: flex;
-            list-style: none;
-            gap: 2rem;
-        }
-
-        .nav-links li {
-            /* 新增：导航项轻微晃动动画 */
-            transition: transform 0.3s ease;
-        }
-
-        .nav-links li:hover {
-            transform: translateY(-3px) rotate(1deg);
-        }
-
-        .nav-links li a {
-            text-decoration: none;
-            color: var(--text-gray);
-            font-weight: 500;
-            padding: 0.5rem 0;
-            position: relative;
-            transition: color 0.3s ease;
-        }
-
-        .nav-links li a:hover {
-            color: var(--dark-green);
-        }
-
-        .nav-links li a::after {
-            content: "";
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 0;
-            height: 2px;
-            background-color: var(--dark-green);
-            transition: width 0.3s ease;
-        }
-
-        .nav-links li a:hover::after {
-            width: 100%;
-        }
-
-        /* 主内容容器 */
-        .container {
-            max-width: 1200px;
-            margin: 2rem auto;
-            padding: 0 5%;
-        }
-
-        /* 优化：通用板块样式（增强动态感） */
-        .section {
-            margin: 4rem 0;
-            padding: 2rem;
-            background-color: var(--white);
-            border-radius: 10px;
-            box-shadow: 0 4px 15px rgba(10, 75, 62, 0.1);
-            transform: translateY(20px);
-            opacity: 0;
-            transition: transform 0.8s ease, opacity 0.8s ease, box-shadow 0.3s ease;
-        }
-
-        .section.visible {
-            transform: translateY(0);
-            opacity: 1;
-        }
-
-        .section:hover {
-            /* 新增：板块悬浮阴影放大效果 */
-            box-shadow: 0 8px 25px rgba(10, 75, 62, 0.15);
-        }
-
-        .section-title {
-            color: var(--dark-green);
-            font-size: 1.8rem;
-            margin-bottom: 2rem;
-            position: relative;
-            padding-bottom: 0.5rem;
-            /* 新增：标题轻微摆动动画 */
-            transition: transform 0.3s ease;
-        }
-
-        .section:hover .section-title {
-            transform: translateX(5px);
-        }
-
-        .section-title::after {
-            content: "";
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 60px;
-            height: 3px;
-            background-color: var(--light-green);
-            /* 新增：下划线延伸动画 */
-            transition: width 0.5s ease;
-        }
-
-        .section:hover .section-title::after {
-            width: 100px;
-        }
-
-        /* 优化：个人信息板块（增强动态感） */
-        /* 调整：个人信息板块视频样式（固定尺寸） */
-.info-video {
-    /* 固定视频容器的宽高，与目标图片一致 */
-    width: 300px; 
-    height: 220px; /* 视频高度 + 描述文字高度 */
-    margin: 1rem 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center; /* 视频和文字居中 */
-}
-
-.personal-video {
-    /* 固定视频本身的宽高 */
-    width: 300px;  
-    height: 180px; 
-    border-radius: 10px;
-    border: 3px solid var(--light-green);
-    box-shadow: 0 4px 15px rgba(10, 75, 62, 0.2);
-    transition: transform 0.5s ease, box-shadow 0.5s ease;
-    object-fit: cover; /* 保持视频比例，避免拉伸变形 */
-}
-
-.video-desc {
-    text-align: center;
-    color: var(--dark-green);
-    font-size: 0.9rem;
-    margin-top: 0.8rem;
-    font-weight: 500;
-    width: 100%; /* 描述文字宽度与视频一致 */
-}
-
-/* 响应式调整：小屏幕下保持固定尺寸（或按需求调整） */
-@media (max-width: 768px) {
-    .info-video {
-        width: 300px; /* 小屏幕下仍保持固定宽度 */
-        margin: 1rem auto; /* 居中显示 */
-    }
-}
-        .personal-info {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 2rem;
-            align-items: center;
-        }
-
-        .info-avatar img {
-            width: 200px;
-            height: 200px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 5px solid var(--light-green);
-            box-shadow: 0 0 20px rgba(16, 125, 104, 0.2);
-            /* 增强：头像旋转动画 */
-            transition: transform 0.5s ease-in-out;
-        }
-
-        .info-avatar img:hover {
-            transform: scale(1.05) rotate(5deg);
-        }
-
-        .info-content {
-            flex: 1;
-            min-width: 300px;
-        }
-
-        .info-content h2 {
-            color: var(--dark-green);
-            font-size: 2rem;
-            margin-bottom: 1rem;
-            /* 新增：姓名悬浮变色 */
-            transition: color 0.3s ease;
-        }
-
-        .info-content:hover h2 {
-            color: var(--light-green);
-        }
-
-        .info-content .info-item {
-            margin: 0.8rem 0;
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            /* 新增：信息项淡入效果 */
-            transition: opacity 0.3s ease, transform 0.3s ease;
-        }
-
-        .info-content .info-item:hover {
-            transform: translateX(5px);
-            opacity: 0.9;
-        }
-
-        .info-content .info-item i {
-            color: var(--light-green);
-            font-size: 1.2rem;
-            /* 新增：图标旋转效果 */
-            transition: transform 0.3s ease;
-        }
-
-        .info-content .info-item:hover i {
-            transform: rotate(15deg);
-        }
-
-        /* 教育经历板块 */
-        .education-item {
-            margin: 1.5rem 0;
-            padding: 1.5rem;
-            border-left: 3px solid var(--light-green);
-            background-color: var(--gray);
-            border-radius: 0 10px 10px 0;
-            transition: transform 0.3s ease, background-color 0.3s ease;
-        }
-
-        .education-item:hover {
-            transform: translateX(10px);
-            background-color: #f0f8f5;
-        }
-
-        .education-school {
-            font-size: 1.3rem;
-            font-weight: bold;
-            color: var(--dark-green);
-        }
-
-        .education-school a {
-            color: var(--light-green);
-            text-decoration: none;
-            transition: color 0.3s ease;
-        }
-
-        .education-school a:hover {
-            color: var(--dark-green);
-            text-decoration: underline;
-        }
-
-        .education-time {
-            color: #666;
-            font-size: 0.9rem;
-            margin: 0.5rem 0;
-        }
-
-        .education-major {
-            font-weight: 500;
-        }
-
-        /* 优化：获奖情况板块（增强动态感） */
-        .awards-list {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 2rem;
-        }
-
-        .award-item {
-            background-color: var(--gray);
-            padding: 1.5rem;
-            border-radius: 10px;
-            transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
-            /* 新增：卡片轻微倾斜效果 */
-            transform: perspective(1000px) rotateY(0deg);
-        }
-
-        .award-item:hover {
-            transform: perspective(1000px) rotateY(5deg) translateY(-5px);
-            box-shadow: 0 6px 20px rgba(10, 75, 62, 0.15);
-            background-color: #f0f8f5;
-        }
-
-        .award-img {
-            width: 100%;
-            height: 180px;
-            border-radius: 5px;
-            object-fit: cover;
-            margin-bottom: 1rem;
-            /* 新增：图片缩放动画 */
-            transition: transform 0.5s ease;
-        }
-
-        .award-item:hover .award-img {
-            transform: scale(1.03);
-        }
-
-        .award-title {
-            color: var(--dark-green);
-            font-weight: bold;
-            margin-bottom: 0.5rem;
-        }
-
-        .award-time {
-            color: #666;
-            font-size: 0.9rem;
-            margin-bottom: 1rem;
-        }
-
-        /* 优化：实习经历板块（增强动态感） */
-        .internship-item {
-            margin: 1.5rem 0;
-            padding: 1.5rem;
-            background-color: var(--gray);
-            border-radius: 10px;
-            transition: transform 0.3s ease, background-color 0.3s ease;
-        }
-
-        .internship-item:hover {
-            transform: translateY(-5px) scale(1.01);
-            background-color: #f0f8f5;
-        }
-
-        .internship-company {
-            font-size: 1.3rem;
-            font-weight: bold;
-            color: var(--dark-green);
-            margin-bottom: 0.5rem;
-        }
-
-        .internship-time {
-            color: #666;
-            font-size: 0.9rem;
-            margin-bottom: 1rem;
-        }
-
-        .internship-desc {
-            line-height: 1.6;
-        }
-
-        /* 优化：联系我/留言板块（增强动态感） */
-        .contact-form {
-            max-width: 800px;
-            margin: 0 auto;
-        }
-
-        .form-group {
-            margin: 1.5rem 0;
-            /* 新增：表单组悬浮效果 */
-            transition: transform 0.3s ease;
-        }
-
-        .form-group:hover {
-            transform: translateX(3px);
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 0.5rem;
-            color: var(--dark-green);
-            font-weight: 500;
-            transition: color 0.3s ease;
-        }
-
-        .form-group:hover label {
-            color: var(--light-green);
-        }
-
-        .form-group input,
-        .form-group textarea {
-            width: 100%;
-            padding: 1rem;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 1rem;
-            transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
-        }
-
-        .form-group input:focus,
-        .form-group textarea:focus {
-            outline: none;
-            border-color: var(--light-green);
-            box-shadow: 0 0 8px rgba(16, 125, 104, 0.3);
-            transform: scale(1.005);
-        }
-
-        .form-group textarea {
-            height: 200px;
-            resize: vertical;
-        }
-
-        .submit-btn {
-            background-color: var(--dark-green);
-            color: var(--white);
-            border: none;
-            padding: 1rem 2rem;
-            border-radius: 5px;
-            font-size: 1rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
-        }
-
-        .submit-btn:hover {
-            background-color: var(--light-green);
-            transform: translateY(-2px) scale(1.05);
-            box-shadow: 0 4px 12px rgba(16, 125, 104, 0.2);
-        }
-
-        /* 页脚样式 */
-        footer {
-            background-color: var(--dark-green);
-            color: var(--white);
-            text-align: center;
-            padding: 2rem;
-            margin-top: 4rem;
-            /* 新增：页脚渐变背景 */
-            background: linear-gradient(135deg, var(--light-green) 0%, var(--dark-green) 100%);
-            transition: transform 0.3s ease;
-        }
-
-        footer:hover {
-            transform: translateY(-2px);
-        }
-
-        /* 新增：动画关键帧（增强活泼感） */
-        /* 头像浮动动画 */
-        @keyframes avatarFloat {
-            from {
-                transform: translateY(0) scale(1);
-            }
-            to {
-                transform: translateY(-10px) scale(1.05);
-            }
-        }
-
-        /* 文字打字机效果 */
-        @keyframes typing {
-            from {
-                width: 0;
-            }
-            to {
-                width: 100%;
-                border-right: none;
-            }
-        }
-
-        /* 光标闪烁效果 */
-        @keyframes blinkCursor {
-            from, to {
-                border-color: transparent;
-            }
-            50% {
-                border-color: var(--white);
-            }
-        }
-
-        /* 淡入上移动画 */
-        @keyframes fadeUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* 淡入动画 */
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: scale(0.8);
-            }
-            to {
-                opacity: 1;
-                transform: scale(1);
-            }
-        }
-
-        /* 响应式调整 */
-        @media (max-width: 768px) {
-            .welcome-name {
-                font-size: 2.5rem;
-            }
-
-            .nav-links {
-                gap: 1rem;
-            }
-
-            .personal-info {
-                flex-direction: column;
-                text-align: center;
-            }
-
-            .awards-list {
-                grid-template-columns: 1fr;
-            }
-        }
-        /* 返回顶部按钮样式 */
-.back-to-top {
-    /* 固定定位，始终显示在页面右下角 */
-    position: fixed;
-    bottom: 30px;
-    right: 30px;
-    /* 按钮样式，与网页墨绿色风格统一 */
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    border: none;
-    background-color: var(--dark-green);
-    color: var(--white);
-    font-size: 18px;
-    /* 居中图标 */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    /* 阴影与动画效果，保持网页活泼感 */
-    box-shadow: 0 4px 12px rgba(10, 75, 62, 0.3);
-    transition: all 0.3s ease;
-    /* 默认隐藏 */
-    opacity: 0;
-    visibility: hidden;
-    cursor: pointer;
-    z-index: 999; /* 确保在最上层显示 */
-}
-
-/* 按钮悬浮效果 */
-.back-to-top:hover {
-    background-color: var(--light-green);
-    transform: translateY(-5px) scale(1.1);
-    box-shadow: 0 6px 15px rgba(10, 75, 62, 0.4);
-}
-
-/* 显示按钮的类 */
-.back-to-top.active {
-    opacity: 1;
-    visibility: visible;
-}
-
-/* 响应式调整：小屏幕下缩小按钮尺寸 */
-@media (max-width: 768px) {
-    .back-to-top {
-        width: 40px;
-        height: 40px;
-        font-size: 16px;
-        bottom: 20px;
-        right: 20px;
-    }
-}
     </style>
-    <!-- 引入图标库 -->
-    <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body>
-    <!-- 返回顶部按钮 -->
-<button id="backToTop" class="back-to-top">
-    <i class="fas fa-arrow-up"></i>
-</button>
-    <!-- 优化：欢迎页（展示个人姓名+照片，增强动画） -->
-    <div class="welcome-page" id="welcomePage">
-        <!-- 个人照片（可替换为自己的图片地址） -->
-        <img src="微信图片_20251222145525.jpg" alt="个人头像" class="welcome-avatar">
-        <!-- 个人姓名 -->
-        <h1 class="welcome-name">孙琪</h1>
-        <p class="welcome-desc">何时葡萄先熟透，你要静候再静候</p>
+<body class="bg-gray-50 font-sans text-gray-800 overflow-x-hidden">
+    <!-- 主页面（入口） -->
+    <div id="landing-page" class="fixed inset-0 z-50 bg-gradient-teal flex flex-col items-center justify-center landing-transition">
+        <!-- 动态装饰元素 -->
+        <div class="absolute inset-0 overflow-hidden pointer-events-none">
+            <!-- 浮动的几何图形 -->
+            <div class="absolute top-[10%] left-[15%] w-20 h-20 rounded-full bg-teal/20 animate-float"></div>
+            <div class="absolute top-[20%] right-[20%] w-16 h-16 rounded-lg bg-teal-dark/10 animate-float-delay-1 rotate-45"></div>
+            <div class="absolute bottom-[30%] left-[25%] w-24 h-24 rounded-full bg-teal-darker/10 animate-float-delay-2"></div>
+            <div class="absolute bottom-[20%] right-[15%] w-18 h-18 bg-teal-light/30 animate-spin-slow rounded-xl"></div>
+            <div class="absolute center-[50%] top-[10%] w-12 h-12 bg-teal/10 animate-bounce-slow"></div>
+            
+            <!-- 网格背景 -->
+            <div class="absolute inset-0 bg-grid-pattern opacity-20"></div>
+        </div>
+        
+        <!-- 主内容 -->
+        <div class="relative z-10 text-center px-4">
+            <!-- 头像动画 -->
+            <div class="w-32 h-32 mx-auto mb-6 rounded-full overflow-hidden border-8 border-white/50 shadow-lg animate-pulse-slow">
+                <img src="kuku.jpg" alt="个人头像" class="w-full h-full object-cover">
+            </div>
+            
+            <!-- 名字动画 -->
+            <h1 class="text-4xl md:text-6xl font-bold text-gradient mb-4 animate-slide-up">
+                王昕茹
+            </h1>
+            
+            <!-- 专业描述 -->
+            <p class="text-xl md:text-2xl text-teal-darkest mb-8 max-w-md mx-auto animate-fade-in delay-100">
+                数据科学与大数据技术专业
+            </p>
+            
+            <!-- 进入按钮 -->
+            <button id="enter-btn" class="px-8 py-4 bg-teal-darker text-white rounded-full shadow-lg hover:bg-teal-darkest transform transition-all duration-300 hover:scale-110 hover:shadow-xl flex items-center justify-center gap-2 mx-auto">
+                <span>进入我的简历</span>
+                <i class="fa fa-arrow-right animate-bounce-slow"></i>
+            </button>
+            
+            <!-- 社交图标 -->
+            <div class="mt-10 flex justify-center gap-6 animate-fade-in delay-300">
+                <a href="#" class="w-12 h-12 rounded-full bg-white/50 flex items-center justify-center text-teal-darker hover:bg-white hover:text-teal-darkest transition-all duration-300 transform hover:scale-110">
+                    <i class="fa fa-github text-xl"></i>
+                </a>
+                <a href="#" class="w-12 h-12 rounded-full bg-white/50 flex items-center justify-center text-teal-darker hover:bg-white hover:text-teal-darkest transition-all duration-300 transform hover:scale-110">
+                    <i class="fa fa-linkedin text-xl"></i>
+                </a>
+                <a href="#" class="w-12 h-12 rounded-full bg-white/50 flex items-center justify-center text-teal-darker hover:bg-white hover:text-teal-darkest transition-all duration-300 transform hover:scale-110">
+                    <i class="fa fa-weixin text-xl"></i>
+                </a>
+            </div>
+        </div>
     </div>
 
-    <!-- 优化后导航栏 -->
-    <nav>
-        <div class="nav-container">
-            <div class="logo">我的简历</div>
-            <ul class="nav-links">
-                <li><a href="#personalInfo"><i class="fas fa-user"></i> 个人信息</a></li>
-                <li><a href="#education"><i class="fas fa-graduation-cap"></i> 教育经历</a></li>
-                <li><a href="#awards"><i class="fas fa-medal"></i> 获奖情况</a></li>
-                <li><a href="#internship"><i class="fas fa-briefcase"></i> 实习经历</a></li>
-                <li><a href="#contact"><i class="fas fa-envelope"></i> 联系我</a></li>
+    <!-- 导航栏 -->
+    <nav class="fixed top-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md shadow-sm border-b border-teal-light/50">
+        <div class="container mx-auto px-4 py-3">
+            <div class="flex justify-between items-center">
+                <a href="#" class="text-teal-darker font-bold text-xl flex items-center gap-2 group">
+                    <i class="fa fa-user-circle text-2xl transition-transform duration-300 group-hover:rotate-12"></i>
+                    <span class="text-gradient">我的简历</span>
+                </a>
+                
+                <!-- 桌面端导航 -->
+                <ul class="hidden md:flex space-x-2">
+                    <li><a href="#profile" class="nav-link px-5 py-2 rounded-lg transition-all duration-300 hover:bg-teal-light/50 hover:text-teal-darker font-medium">个人简历</a></li>
+                    <li><a href="#education" class="nav-link px-5 py-2 rounded-lg transition-all duration-300 hover:bg-teal-light/50 hover:text-teal-darker font-medium">教育经历</a></li>
+                    <li><a href="#awards" class="nav-link px-5 py-2 rounded-lg transition-all duration-300 hover:bg-teal-light/50 hover:text-teal-darker font-medium">获奖经历</a></li>
+                    <li><a href="#internship" class="nav-link px-5 py-2 rounded-lg transition-all duration-300 hover:bg-teal-light/50 hover:text-teal-darker font-medium">实习经历</a></li>
+                </ul>
+                
+                <!-- 移动端菜单按钮 -->
+                <button id="menuBtn" class="md:hidden text-teal-darker focus:outline-none p-2 rounded-full hover:bg-teal-light/50 transition-colors">
+                    <i class="fa fa-bars text-xl"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- 移动端导航菜单 -->
+        <div id="mobileMenu" class="md:hidden hidden bg-white shadow-lg absolute w-full border-b border-teal-light/50 animate-fade-in">
+            <ul class="py-3 space-y-1">
+                <li><a href="#profile" class="nav-link block px-5 py-3 hover:bg-teal-light/50 hover:text-teal-darker font-medium transition-colors">个人简历</a></li>
+                <li><a href="#education" class="nav-link block px-5 py-3 hover:bg-teal-light/50 hover:text-teal-darker font-medium transition-colors">教育经历</a></li>
+                <li><a href="#awards" class="nav-link block px-5 py-3 hover:bg-teal-light/50 hover:text-teal-darker font-medium transition-colors">获奖经历</a></li>
+                <li><a href="#internship" class="nav-link block px-5 py-3 hover:bg-teal-light/50 hover:text-teal-darker font-medium transition-colors">实习经历</a></li>
             </ul>
         </div>
     </nav>
 
-    <!-- 主内容容器 -->
-    <div class="container">
-        <!-- 个人信息板块 -->
-        <!-- 个人信息板块 -->
-<section class="section" id="personalInfo">
-    <h2 class="section-title">个人信息</h2>
-    <div class="personal-info">
-        <div class="info-avatar">
-            <img src="微信图片_20251222145525.jpg" alt="个人头像">
-        </div>
-        <!-- 新增：视频展示容器 -->
-        <div class="info-video">
-            <video class="personal-video" controls muted loop poster="images/video-cover.png">
-                <!-- 本地视频资源（相对路径） -->
-                <source src="WeChat_20251222160250.mp4" type="video/mp4">
-                <!-- 备用：网络视频资源（若无需本地视频，可替换上面的source） -->
-                <!-- <source src="https://cdn.pixabay.com/video/2021/08/10/65248-617126106_small.mp4" type="video/mp4"> -->
-                您的浏览器不支持HTML5视频播放，请升级浏览器后重试。
-            </video>
-            <p class="video-desc">可点击播放/暂停，自动静音循环</p>
-        </div>
-        <div class="info-content">
-            <h2>孙琪</h2>
-            <div class="info-item">
-                <i class="fas fa-id-card"></i>
-                <span>性别：女</span>
-            </div>
-            <div class="info-item">
-                <i class="fas fa-birthday-cake"></i>
-                <span>出生日期：2006年2月</span>
-            </div>
-            <div class="info-item">
-                <i class="fas fa-phone"></i>
-                <span>联系电话：17777777777</span>
-            </div>
-            <div class="info-item">
-                <i class="fas fa-envelope"></i>
-                <span>电子邮箱：sunqi@qq.com</span>
-            </div>
-            <div class="info-item">
-                <i class="fas fa-map-marker-alt"></i>
-                <span>现居地址：辽宁省大连市</span>
-            </div>
-            <div class="info-item">
-                <i class="fas fa-star"></i>
-                <span>个人特长：Web开发、UI设计、数据分析</span>
-            </div>
-        </div>
-    </div>
-</section>
-        <!-- 教育经历板块 -->
-        <section class="section" id="education">
-            <h2 class="section-title">教育经历</h2>
-            <div class="education-list">
-                <div class="education-item">
-                    <div class="education-school">
-                        <a href="https://www.dlou.edu.cn/" target="_blank">大连海洋大学</a>
+    <!-- 主内容区 -->
+    <main class="container mx-auto px-4 pt-28 pb-20">
+        <!-- 个人简历部分 -->
+        <section id="profile" class="mb-20 section-fade">
+            <div class="bg-white rounded-2xl shadow-md p-6 md:p-9 border border-gray-100 card-hover">
+                <h2 class="text-3xl md:text-4xl font-bold mb-8 flex items-center gap-3">
+                    <i class="fa fa-user-circle text-teal-darker text-3xl animate-pulse-slow"></i>
+                    <span class="text-gradient">个人简历</span>
+                </h2>
+                
+                <div class="grid md:grid-cols-2 gap-10">
+                    <div class="flex flex-col items-center md:items-start parallax">
+                        <div class="w-52 h-52 rounded-full overflow-hidden border-6 border-teal-light/30 shadow-md mb-6 relative group">
+                            <img src="kuku.jpg" alt="个人头像" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
+                            <div class="absolute inset-0 bg-teal/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-full flex items-center justify-center">
+                                <i class="fa fa-user text-4xl text-teal-darker"></i>
+                            </div>
+                        </div>
+                        <h3 class="text-2xl font-semibold text-center md:text-left mb-2 text-gray-800">王昕茹</h3>
+                        <p class="text-lg text-teal-dark text-center md:text-left mb-4">本科(在读)</p>
+                        <div class="flex gap-4 text-teal-darker">
+                            <a href="#" class="hover:text-teal-darkest transition-colors text-xl"><i class="fa fa-github"></i></a>
+                            <a href="#" class="hover:text-teal-darkest transition-colors text-xl"><i class="fa fa-linkedin"></i></a>
+                            <a href="#" class="hover:text-teal-darkest transition-colors text-xl"><i class="fa fa-weixin"></i></a>
+                        </div>
                     </div>
-                    <div class="education-time">2024年9月 - 2028年6月</div>
-                    <div class="education-major">本科 | 数据科学与大数据技术</div>
-                    <p style="margin-top: 1rem; line-height: 1.6;">
-                        主修课程：数据结构、计算机网络、Web前端开发、数据库原理、人工智能导论等，
-                        在校期间成绩优异，多次获得校级奖学金，专业排名前10%。
-                    </p>
+                    
+                    <div class="space-y-6">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div class="flex items-start gap-3 bg-teal-light/20 p-4 rounded-xl card-hover">
+                                <i class="fa fa-envelope text-teal text-xl mt-1"></i>
+                                <div>
+                                    <p class="font-medium text-gray-700">邮箱</p>
+                                    <p class="text-gray-600">2904284714@qq.com</p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-start gap-3 bg-teal-light/20 p-4 rounded-xl card-hover">
+                                <i class="fa fa-phone text-teal text-xl mt-1"></i>
+                                <div>
+                                    <p class="font-medium text-gray-700">电话</p>
+                                    <p class="text-gray-600">13342241340</p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-start gap-3 bg-teal-light/20 p-4 rounded-xl card-hover">
+                                <i class="fa fa-map-marker text-teal text-xl mt-1"></i>
+                                <div>
+                                    <p class="font-medium text-gray-700">地址</p>
+                                    <p class="text-gray-600">大连海洋大学</p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-start gap-3 bg-teal-light/20 p-4 rounded-xl card-hover">
+                                <i class="fa fa-graduation-cap text-teal text-xl mt-1"></i>
+                                <div>
+                                    <p class="font-medium text-gray-700">学历</p>
+                                    <p class="text-gray-600">本科</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-2">
+                            <h3 class="text-xl font-semibold mb-4 text-teal-dark flex items-center gap-2">
+                                <i class="fa fa-info-circle"></i>个人简介
+                            </h3>
+                            <p class="text-gray-700 leading-relaxed bg-white p-5 rounded-xl shadow-sm border border-teal-light/20">
+                                我是一名数据科学与大数据技术专业的毕业生，自认为是个 “数据世界的探险家”。从课堂上的 Hadoop、Spark 分布式计算，到实践中用 Python 爬取海量数据、用 SQL 挖掘隐藏规律，再到用机器学习算法为业务问题搭建预测模型，我始终痴迷于从杂乱无章的数字海洋里打捞有价值的 “宝藏”。曾参与电商用户行为分析项目，通过构建用户画像模型将精准推荐转化率提升 15%；也在校园大数据竞赛中，用数据可视化技术把枯燥的校园能耗数据转化为直观的优化方案。我擅长用技术拆解业务痛点，用数据说话，既懂技术底层逻辑，也能站在业务视角思考问题，渴望在真实的业务场景中，让数据从 “数字” 变成 “决策力”。
+                            </p>
+                        </div>
+                    </div>
                 </div>
-                <div class="education-item">
-                    <div class="education-school">大连市第一中学</div>
-                    <div class="education-time">2022年9月 - 2024年6月</div>
-                    <div class="education-major">高中 | 理科重点班</div>
-                    <p style="margin-top: 1rem; line-height: 1.6;">
-                        担任班级学习委员，多次获得"三好学生"称号，高考成绩优异，顺利考入大连海洋大学。
-                    </p>
+                
+                <div class="mt-10">
+                    <h3 class="text-xl font-semibold mb-5 text-teal-dark flex items-center gap-2">
+                        <i class="fa fa-code"></i>技能特长
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center">
+                                <span class="font-medium text-gray-700">HTML</span>
+                                <span class="text-sm text-gray-600">75%</span>
+                            </div>
+                            <div class="skill-bar">
+                                <div class="skill-progress" style="width: 75%"></div>
+                            </div>
+                            
+                            <div class="flex justify-between items-center">
+                                <span class="font-medium text-gray-700">CSS</span>
+                                <span class="text-sm text-gray-600">60%</span>
+                            </div>
+                            <div class="skill-bar">
+                                <div class="skill-progress" style="width: 60%"></div>
+                            </div>
+                            
+                            <div class="flex justify-between items-center">
+                                <span class="font-medium text-gray-700">Java</span>
+                                <span class="text-sm text-gray-600">85%</span>
+                            </div>
+                            <div class="skill-bar">
+                                <div class="skill-progress" style="width: 85%"></div>
+                            </div>
+                            
+                            <div class="flex justify-between items-center">
+                                <span class="font-medium text-gray-700">mysql</span>
+                                <span class="text-sm text-gray-600">80%</span>
+                            </div>
+                            <div class="skill-bar">
+                                <div class="skill-progress" style="width: 80%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center">
+                                <span class="font-medium text-gray-700">C语言</span>
+                                <span class="text-sm text-gray-600">82%</span>
+                            </div>
+                            <div class="skill-bar">
+                                <div class="skill-progress" style="width: 82%"></div>
+                            </div>
+                            
+                            <div class="flex justify-between items-center">
+                                <span class="font-medium text-gray-700">python</span>
+                                <span class="text-sm text-gray-600">92%</span>
+                            </div>
+                            <div class="skill-bar">
+                                <div class="skill-progress" style="width: 92%"></div>
+                            </div>
+                            
+                            <div class="flex justify-between items-center">
+                                <span class="font-medium text-gray-700">web</span>
+                                <span class="text-sm text-gray-600">88%</span>
+                            </div>
+                            <div class="skill-bar">
+                                <div class="skill-progress" style="width: 88%"></div>
+                            </div>
+                            
+                            <div class="flex justify-between items-center">
+                                <span class="font-medium text-gray-700">matlab</span>
+                                <span class="text-sm text-gray-600">75%</span>
+                            </div>
+                            <div class="skill-bar">
+                                <div class="skill-progress" style="width: 75%"></div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>
 
-        <!-- 获奖情况板块 -->
-        <section class="section" id="awards">
-            <h2 class="section-title">获奖情况</h2>
-            <div class="awards-list">
-                <div class="award-item">
-                    <img src="微信图片_20251222145957.webp" alt="校级奖学金" class="award-img">
-                    <div class="award-title">校级奖学金</div>
-                    <div class="award-time">2025年12月</div>
-                    <p style="line-height: 1.6;">
-                        因学业成绩优异、综合表现突出，获得校级奖学金，全校仅5人获评。
-                    </p>
+        <!-- 教育经历部分 -->
+        <section id="education" class="mb-20 section-fade">
+            <div class="bg-white rounded-2xl shadow-md p-6 md:p-9 border border-gray-100 card-hover">
+                <h2 class="text-3xl md:text-4xl font-bold mb-8 flex items-center gap-3">
+                    <i class="fa fa-graduation-cap text-teal-darker text-3xl animate-pulse-slow"></i>
+                    <span class="text-gradient">教育经历</span>
+                </h2>
+              
+                <div class="space-y-8 relative">
+                    <!-- 时间线竖线 -->
+                    <div class="absolute left-4 md:left-1/2 top-0 bottom-0 w-0.5 bg-teal-light transform md:-translate-x-1/2"></div>
+                    
+                    <div class="flex flex-col md:flex-row items-start gap-6 relative">
+                        <div class="w-8 h-8 rounded-full bg-teal-darker text-white flex items-center justify-center z-10 shrink-0 shadow-md">
+                            <i class="fa fa-university"></i>
+                        </div>
+                        <iframe name="dlou" src="https://www.baidu.cn/" width="800px" height="400px"></iframe>
+                        <p><a href="https://www.pku.edu.cn/" target="dlou">母校</a></p>
+                        <div class="bg-teal-light/10 rounded-xl p-6 w-full md:w-[calc(50%-2rem)] card-hover md:ml-auto">
+                            <div class="flex flex-wrap justify-between items-center mb-3">
+                                <h3 class="text-xl font-semibold text-gray-800">大连海洋大学</h3>
+                                <span class="px-3 py-1 bg-teal-light/50 text-teal-darker rounded-full text-sm">2024.09 - 2028.06</span>
+                            </div>
+                            <p class="text-lg text-teal-dark mb-3 font-medium">数据科学与大数据技术 | 本科</p>
+                            <p class="text-gray-600 mb-3">GPA：3.8/4.0 | 专业排名：前15%</p>
+                            <p class="text-gray-700">主修课程覆盖大数据技术与数据分析两大方向，包括分布式系统、数据挖掘、统计分析、机器学习、Python 程序设计等，兼顾技术底层与业务应用。
+具备数据全流程处理能力：从通过爬虫工具采集公开数据，到用 SQL 进行数据库查询，再到构建机器学习模型进行趋势预测，形成标准化分析链路。
+                            </p>
+                        </div>
+                    </div>
                 </div>
-                <div class="award-item">
-                    <img src="https://cdn.pixabay.com/photo/2016/03/27/18/54/technology-1283624_1280.jpg" alt="全国大学生Web开发大赛一等奖" class="award-img">
-                    <div class="award-title">全国大学生Web开发大赛一等奖</div>
-                    <div class="award-time">2025年8月</div>
-                    <p style="line-height: 1.6;">
-                        团队开发的"校园服务平台"获得大赛一等奖，得到评委高度评价，具备实际应用价值。
-                    </p>
-                </div>
-                <div class="award-item">
-                    <img src="微信图片_20251222145952.jpg" alt="校级优秀毕业生" class="award-img">
-                    <div class="award-title">校级三好学生</div>
-                    <div class="award-time">2025年12月</div>
-                    <p style="line-height: 1.6;">
-                        因在校表现优异、成绩优秀，因此荣获“三好学生”称号。
-                    </p>
+        </section>
+
+        <!-- 获奖经历部分 -->
+        <section id="awards" class="mb-20 section-fade">
+            <div class="bg-white rounded-2xl shadow-md p-6 md:p-9 border border-gray-100 card-hover">
+                <h2 class="text-3xl md:text-4xl font-bold mb-8 flex items-center gap-3">
+                    <i class="fa fa-trophy text-teal-darker text-3xl animate-pulse-slow"></i>
+                    <span class="text-gradient">获奖经历</span>
+                </h2>
+                
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div class="bg-teal-light/10 rounded-xl p-6 card-hover parallax">
+                        <div class="flex justify-between items-start mb-4">
+                            <h3 class="font-semibold text-xl text-gray-800">全国大学生计算机设计大赛一等奖</h3>
+                            <span class="px-3 py-1 bg-teal text-white rounded-full text-sm font-medium">2025</span>
+                        </div>
+                        <div class="flex items-start gap-3 mb-3">
+                            <i class="fa fa-medal text-teal-darker text-xl mt-1"></i>
+                            <p class="text-gray-700">参与开发的Web应用项目获得全国一等奖，负责前端界面设计与交互实现</p>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-teal-light/10 rounded-xl p-6 card-hover parallax">
+                        <div class="flex justify-between items-start mb-4">
+                            <h3 class="font-semibold text-xl text-gray-800">校级优秀学生奖学金</h3>
+                            <span class="px-3 py-1 bg-teal text-white rounded-full text-sm font-medium">2025</span>
+                        </div>
+                        <div class="flex items-start gap-3 mb-3">
+                            <i class="fa fa-medal text-teal-darker text-xl mt-1"></i>
+                            <p class="text-gray-700">因学业成绩优异，综合表现突出，获得校级一等奖学金</p>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-teal-light/10 rounded-xl p-6 card-hover parallax">
+                        <div class="flex justify-between items-start mb-4">
+                            <h3 class="font-semibold text-xl text-gray-800">校程序设计竞赛二等奖</h3>
+                            <span class="px-3 py-1 bg-teal text-white rounded-full text-sm font-medium">2025</span>
+                        </div>
+                        <div class="flex items-start gap-3 mb-3">
+                            <i class="fa fa-medal text-teal-darker text-xl mt-1"></i>
+                            <p class="text-gray-700">在学校组织的程序设计竞赛中，凭借算法设计和代码实现能力获得二等奖</p>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-teal-light/10 rounded-xl p-6 card-hover parallax">
+                        <div class="flex justify-between items-start mb-4">
+                            <h3 class="font-semibold text-xl text-gray-800">优秀学生干部</h3>
+                            <span class="px-3 py-1 bg-teal text-white rounded-full text-sm font-medium">2025</span>
+                        </div>
+                        <div class="flex items-start gap-3 mb-3">
+                            <i class="fa fa-medal text-teal-darker text-xl mt-1"></i>
+                            <p class="text-gray-700">担任学院学生会干事期间，工作认真负责，被评为优秀学生干部</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>
 
-        <!-- 实习经历板块 -->
-        <section class="section" id="internship">
-            <h2 class="section-title">实习经历</h2>
-            <div class="internship-list">
-                <div class="internship-item">
-                    <div class="internship-company">大连科技有限公司</div>
-                    <div class="internship-time">2028年7月 - 2030年9月 | Web前端开发实习生</div>
-                    <div class="internship-desc">
-                        <p>1. 参与公司官网的改版工作，使用HTML、CSS、JavaScript实现页面布局与交互效果，提升官网用户体验；</p>
-                        <p style="margin-top: 0.5rem;">2. 协助资深工程师完成后台管理系统的组件开发，使用Vue框架实现数据可视化模块；</p>
-                        <p style="margin-top: 0.5rem;">3. 优化页面加载速度，将首屏加载时间缩短30%，获得领导认可；</p>
-                        <p style="margin-top: 0.5rem;">4. 参与项目需求评审与测试工作，提交多个bug修复方案，保障项目顺利上线。</p>
+        <!-- 实习经历部分 -->
+        <section id="internship" class="section-fade">
+            <div class="bg-white rounded-2xl shadow-md p-6 md:p-9 border border-gray-100 card-hover">
+                <h2 class="text-3xl md:text-4xl font-bold mb-8 flex items-center gap-3">
+                    <i class="fa fa-briefcase text-teal-darker text-3xl animate-pulse-slow"></i>
+                    <span class="text-gradient">实习经历</span>
+                </h2>
+                
+                <div class="space-y-10">
+                    <div class="bg-teal-light/5 rounded-2xl p-7 border border-teal-light/20 card-hover parallax">
+                        <div class="flex flex-wrap justify-between items-center mb-5">
+                            <h3 class="text-2xl font-semibold text-gray-800">东软集团</h3>
+                            <span class="px-4 py-2 bg-teal-light/30 text-teal-darker rounded-lg text-base font-medium">2025.08 - 2025.09</span>
+                        </div>
+                        <p class="text-xl text-teal-dark mb-5 font-medium flex items-center gap-2">
+                            <i class="fa fa-briefcase"></i>前端开发实习生
+                        </p>
+                        <ul class="list-disc list-inside space-y-3 text-gray-700 pl-4">
+                            <li class="ml-2 hover:text-teal-darker transition-colors">参与公司官网的改版工作，负责页面组件的开发与优化</li>
+                            <li class="ml-2 hover:text-teal-darker transition-colors">使用React框架开发内部管理系统的前端界面，提升用户体验</li>
+                            <li class="ml-2 hover:text-teal-darker transition-colors">优化现有代码，减少页面加载时间30%，提高网站性能</li>
+                            <li class="ml-2 hover:text-teal-darker transition-colors">与前端工程师协作，完成接口联调与数据交互</li>
+                        </ul>
+                        <div class="mt-5 flex flex-wrap gap-3">
+                            <span class="px-3 py-1 bg-teal-light/50 text-teal-darker rounded-full text-sm">React</span>
+                            <span class="px-3 py-1 bg-teal-light/50 text-teal-darker rounded-full text-sm">Ant Design</span>
+                            <span class="px-3 py-1 bg-teal-light/50 text-teal-darker rounded-full text-sm">Axios</span>
+                        </div>
                     </div>
-                </div>
-                <div class="internship-item">
-                    <div class="internship-company">XX互联网工作室</div>
-                    <div class="internship-time">2028年1月 - 2030年2月 | UI/UX设计实习生</div>
-                    <div class="internship-desc">
-                        <p>1. 负责工作室小程序的界面设计，使用Figma完成高保真原型图制作，输出设计规范文档；</p>
-                        <p style="margin-top: 0.5rem;">2. 参与用户调研工作，整理用户反馈并优化界面交互逻辑，提升小程序用户留存率；</p>
-                        <p style="margin-top: 0.5rem;">3. 协助完成宣传海报与推文配图设计，提升工作室品牌形象传播效果。</p>
+                    
+                    <div class="bg-teal-light/5 rounded-2xl p-7 border border-teal-light/20 card-hover parallax">
+                        <div class="flex flex-wrap justify-between items-center mb-5">
+                            <h3 class="text-2xl font-semibold text-gray-800">成者科技创业公司</h3>
+                            <span class="px-4 py-2 bg-teal-light/30 text-teal-darker rounded-lg text-base font-medium">2025.07 - 2025.08</span>
+                        </div>
+                        <p class="text-xl text-teal-dark mb-5 font-medium flex items-center gap-2">
+                            <i class="fa fa-briefcase"></i>Web开发实习生
+                        </p>
+                        <ul class="list-disc list-inside space-y-3 text-gray-700 pl-4">
+                            <li class="ml-2 hover:text-teal-darker transition-colors">负责公司产品的前端页面制作，实现响应式布局</li>
+                            <li class="ml-2 hover:text-teal-darker transition-colors">参与微信小程序的开发，完成核心功能的实现</li>
+                            <li class="ml-2 hover:text-teal-darker transition-colors">协助设计师进行界面优化，提升产品的视觉效果</li>
+                            <li class="ml-2 hover:text-teal-darker transition-colors">编写技术文档，记录开发过程和技术要点</li>
+                        </ul>
+                        <div class="mt-5 flex flex-wrap gap-3">
+                            <span class="px-3 py-1 bg-teal-light/50 text-teal-darker rounded-full text-sm">Vue</span>
+                            <span class="px-3 py-1 bg-teal-light/50 text-teal-darker rounded-full text-sm">微信小程序</span>
+                            <span class="px-3 py-1 bg-teal-light/50 text-teal-darker rounded-full text-sm">CSS3</span>
+                        </div>
                     </div>
                 </div>
             </div>
         </section>
-
-        <!-- 联系我/留言板块 -->
-        <section class="section" id="contact">
-            <h2 class="section-title">联系我</h2>
-            <div class="contact-form">
-                <form id="messageForm">
-                    <div class="form-group">
-                        <label for="name">您的姓名</label>
-                        <input type="text" id="name" required placeholder="请输入您的姓名">
-                    </div>
-                    <div class="form-group">
-                        <label for="email">您的邮箱</label>
-                        <input type="email" id="email" required placeholder="请输入您的电子邮箱">
-                    </div>
-                    <div class="form-group">
-                        <label for="subject">留言主题</label>
-                        <input type="text" id="subject" required placeholder="请输入留言主题">
-                    </div>
-                    <div class="form-group">
-                        <label for="message">留言内容</label>
-                        <textarea id="message" required placeholder="请输入您想对我说的话..."></textarea>
-                    </div>
-                    <button type="submit" class="submit-btn"><i class="fas fa-paper-plane"></i> 提交留言</button>
-                </form>
-            </div>
-        </section>
-    </div>
+    </main>
 
     <!-- 页脚 -->
-    <footer>
-        <p>&copy; 2025 我的个人简历 | 设计与开发：孙琪</p>
-        <p style="margin-top: 0.5rem;">感谢您的浏览</p>
+    <footer class="bg-gradient-to-r from-teal-darker to-teal-darkest text-white py-8">
+        <div class="container mx-auto px-4 text-center">
+            <p class="text-lg mb-4">&copy; 2025 个人简历 | 毕业生：王昕茹</p>
+            <div class="flex justify-center space-x-6">
+                <a href="#" class="hover:text-teal-light transition-colors transform hover:scale-110 duration-300">
+                    <i class="fa fa-github text-2xl"></i>
+                </a>
+                <a href="#" class="hover:text-teal-light transition-colors transform hover:scale-110 duration-300">
+                    <i class="fa fa-linkedin text-2xl"></i>
+                </a>
+                <a href="#" class="hover:text-teal-light transition-colors transform hover:scale-110 duration-300">
+                    <i class="fa fa-weixin text-2xl"></i>
+                </a>
+            </div>
+            <p class="mt-4 text-teal-light/80 text-sm">用心设计，专注开发</p>
+        </div>
     </footer>
 
+    <!-- JavaScript -->
     <script>
-        // 返回顶部功能实现
-const backToTopBtn = document.getElementById('backToTop');
-
-// 监听页面滚动事件，控制按钮显示/隐藏
-window.addEventListener('scroll', () => {
-    // 当滚动距离超过300px时显示按钮，否则隐藏
-    if (window.scrollY > 300) {
-        backToTopBtn.classList.add('active');
-    } else {
-        backToTopBtn.classList.remove('active');
-    }
-});
-
-// 绑定按钮点击事件，实现平滑返回顶部
-backToTopBtn.addEventListener('click', () => {
-    window.scrollTo({
-        top: 0,
-        behavior: 'smooth' // 平滑滚动，与导航栏滚动效果一致
-    });
-});
-        // 1. 首页3秒后跳转（隐藏欢迎页，显示简历内容）
-        setTimeout(() => {
-            const welcomePage = document.getElementById('welcomePage');
-            welcomePage.style.opacity = 0;
-            welcomePage.style.transform = 'scale(0.9)';
+        // 主页面进入按钮点击事件
+        const enterBtn = document.getElementById('enter-btn');
+        const landingPage = document.getElementById('landing-page');
+        
+        enterBtn.addEventListener('click', () => {
+            // 主页面淡出并上移
+            landingPage.classList.add('opacity-0', 'translate-y-[-100%]');
+            
+            // 启用页面滚动
+            document.body.style.overflow = 'auto';
+            
+            // 触发滚动事件以显示第一个部分
             setTimeout(() => {
-                welcomePage.style.display = 'none';
-            }, 1000);
-        }, 3000);
-
-        // 2. 板块滚动可见性动画
-        const sections = document.querySelectorAll('.section');
-        const observerOptions = {
-            root: null,
-            rootMargin: '0px',
-            threshold: 0.1
-        };
-
-        const sectionObserver = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('visible');
-                    sectionObserver.unobserve(entry.target);
-                }
-            });
-        }, observerOptions);
-
-        sections.forEach(section => {
-            sectionObserver.observe(section);
-        });
-
-        // 3. 留言表单提交处理
-        const messageForm = document.getElementById('messageForm');
-        messageForm.addEventListener('submit', (e) => {
-            e.preventDefault(); // 阻止默认表单提交
-
-            // 获取表单数据
-            const name = document.getElementById('name').value;
-            const email = document.getElementById('email').value;
-            const subject = document.getElementById('subject').value;
-            const message = document.getElementById('message').value;
-
-            // 简单验证与提示
-            if (name && email && subject && message) {
-                alert(`感谢${name}的留言！我会尽快通过${email}与您取得联系。`);
-                messageForm.reset(); // 重置表单
-            } else {
-                alert('请填写完整的留言信息！');
-            }
-        });
-
-        // 4. 导航栏平滑滚动（增强体验）
-        document.querySelectorAll('.nav-links a').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                const targetId = this.getAttribute('href');
-                const targetElement = document.querySelector(targetId);
-                window.scrollTo({
-                    top: targetElement.offsetTop - 80, // 避开导航栏遮挡
-                    behavior: 'smooth'
-                });
-            });
-        });
-
-        // 新增：鼠标移动时，导航栏轻微跟随（增强活泼感）
-        document.addEventListener('mousemove', (e) => {
-            const nav = document.querySelector('nav');
-            const x = e.clientX / window.innerWidth;
-            const y = e.clientY / window.innerHeight;
-            nav.style.transform = `translateX(${x * -5}px) translateY(${y * -3}px)`;
+                window.dispatchEvent(new Event('scroll'));
+            }, 500);
         });
         
+        // 移动端菜单切换
+        const menuBtn = document.getElementById('menuBtn');
+        const mobileMenu = document.getElementById('mobileMenu');
+        
+        menuBtn.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+            const icon = menuBtn.querySelector('i');
+            icon.classList.toggle('fa-bars');
+            icon.classList.toggle('fa-times');
+        });
+        
+        // 导航链接激活状态
+        const navLinks = document.querySelectorAll('.nav-link');
+        const sections = document.querySelectorAll('section');
+        
+        // 点击导航链接关闭移动端菜单
+        navLinks.forEach(link => {
+            link.addEventListener('click', () => {
+                if (!mobileMenu.classList.contains('hidden')) {
+                    mobileMenu.classList.add('hidden');
+                    const icon = menuBtn.querySelector('i');
+                    icon.classList.remove('fa-times');
+                    icon.classList.add('fa-bars');
+                }
+            });
+        });
+        
+        // 滚动时更新导航激活状态
+        window.addEventListener('scroll', () => {
+            let current = '';
+            
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                const sectionHeight = section.clientHeight;
+                if (pageYOffset >= (sectionTop - 150)) {
+                    current = section.getAttribute('id');
+                }
+            });
+            
+            navLinks.forEach(link => {
+                link.classList.remove('nav-active');
+                if (link.getAttribute('href').substring(1) === current) {
+                    link.classList.add('nav-active');
+                }
+            });
+            
+            // 滚动时的渐入效果
+            sections.forEach(section => {
+                const sectionTop = section.getBoundingClientRect().top;
+                const windowHeight = window.innerHeight;
+                
+                if (sectionTop < windowHeight * 0.8) {
+                    section.classList.add('section-show');
+                }
+            });
+            
+            // 视差效果
+            const parallaxElements = document.querySelectorAll('.parallax');
+            parallaxElements.forEach(el => {
+                const scrollY = window.pageYOffset;
+                el.style.transform = `translateY(${scrollY * 0.02}px)`;
+            });
+        });
+        
+        // 技能进度条动画
+        window.addEventListener('load', () => {
+            // 初始时隐藏滚动
+            document.body.style.overflow = 'hidden';
+            
+            // 初始化技能进度条
+            const skillProgress = document.querySelectorAll('.skill-progress');
+            skillProgress.forEach(progress => {
+                const width = progress.style.width;
+                progress.style.width = '0';
+                setTimeout(() => {
+                    progress.style.width = width;
+                }, 1000);
+            });
+        });
+        
+        // 点击导航栏平滑滚动增强
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    window.scrollTo({
+                        top: target.offsetTop - 80,
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
     </script>
 </body>
 </html>
